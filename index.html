@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veo 3 ভিডিও জেনারেটর</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2d3436;
+            --accent: #ff4757;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Hind Siliguri', sans-serif; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding-bottom: 60px;
+        }
+
+        /* হেডার ডিজাইন */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 30px rgba(37, 117, 252, 0.2);
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        header h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 5px; }
+        header p { font-size: 1rem; opacity: 0.9; }
+
+        /* শেয়ার বাটন */
+        .share-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .share-btn:hover { background: white; color: var(--primary); }
+
+        /* কার্ড গ্রিড */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* কার্ড ডিজাইন */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-img-container {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .card:hover .card-img { transform: scale(1.05); }
+
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .prompt-box {
+            background: #f8f9fa;
+            border: 1px dashed #ced4da;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #636e72;
+            height: 80px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        /* বাটন গ্রুপ */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        button {
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-copy {
+            flex: 1;
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+        .btn-copy:hover { background: #b2bec3; }
+
+        .btn-create {
+            flex: 1.5;
+            background: linear-gradient(45deg, #FF0055, #8e44ad);
+            color: white;
+            text-decoration: none;
+        }
+        .btn-create:hover { opacity: 0.9; box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3); }
+
+        /* টোস্ট নোটিফিকেশন */
+        #toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #2d3436;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 15px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 30px 15px; }
+            header h1 { font-size: 1.8rem; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <button class="share-btn" onclick="sharePage()">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5z"/></svg>
+            শেয়ার
+        </button>
+        <h1>Gemini Veo 3 স্টুডিও</h1>
+        <p>সিনেমেটিক ভিডিও তৈরির জন্য সেরা ২০টি প্রম্পট কালেকশন</p>
+    </header>
+
+    <div class="container" id="card-container">
+        </div>
+
+    <div id="toast">প্রম্পট কপি করা হয়েছে!</div>
+
+    <script>
+        // ২০টি হাই-কোয়ালিটি সিনেমাটিক প্রম্পট ডেটা
+        const cardsData = [
+            { id: 1, title: "Cyberpunk City", prompt: "Cinematic drone shot of a futuristic cyberpunk city at night, neon lights reflecting on wet pavement, flying cars, heavy rain, Blade Runner style, 8k resolution, hyper-realistic." },
+            { id: 2, title: "Ancient Library", prompt: "Slow pan inside an ancient magical library, floating dust motes in sunbeams, leather books, candles flickering, mystical atmosphere, detailed texture, 4k." },
+            { id: 3, title: "Stormy Ocean", prompt: "Hyper-realistic wide shot of a viking ship in a violent stormy ocean, giant waves crashing, lightning striking in the background, dark and moody color palette, cinematic lighting." },
+            { id: 4, title: "Future Robot", prompt: "Close-up portrait of a rusty robot with human-like sad eyes, holding a flower, post-apocalyptic background, sunset lighting, depth of field, emotional storytelling." },
+            { id: 5, title: "Forest Waterfall", prompt: "Serene slow-motion shot of a hidden waterfall in a lush green jungle, sunlight filtering through leaves, butterflies flying, crystal clear water, nature documentary style." },
+            { id: 6, title: "Space Station", prompt: "View from a space station window looking down at Earth, aurora borealis visible, stars in background, high tech interior, sci-fi movie look, 60fps smooth motion." },
+            { id: 7, title: "Medieval Battle", prompt: "Epic cinematic shot of a medieval knight charging on a horse, dust rising, golden hour lighting, lens flare, action-packed, detailed armor reflections." },
+            { id: 8, title: "Underwater Reef", prompt: "Vibrant underwater coral reef scene, colorful fish swimming, sun rays penetrating the water surface, clear blue water, 8k resolution, National Geographic style." },
+            { id: 9, title: "Desert Dunes", prompt: "Aerial view of vast desert sand dunes at sunset, sharp shadows, wind blowing sand across the ridges, warm orange tones, minimalist and dramatic composition." },
+            { id: 10, title: "Snowy Peak", prompt: "Time-lapse of clouds moving rapidly over a majestic snowy mountain peak, jagged rocks, blue sky, crisp details, photorealistic winter landscape." },
+            { id: 11, title: "Steampunk Lab", prompt: "Interior of a cluttered steampunk inventor's workshop, brass gears turning, steam piping, vintage light bulbs, intricate details, warm sepia tones." },
+            { id: 12, title: "Lion King", prompt: "Extreme close-up of a male lion's face, wind blowing through mane, intense gaze, savanna background at sunrise, hyper-detailed fur texture." },
+            { id: 13, title: "Neon Car Chase", prompt: "Fast-paced low angle shot of a sports car drifting on a race track at night, motion blur, glowing brake discs, sparks flying, dynamic camera movement." },
+            { id: 14, title: "Zen Garden", prompt: "Peaceful Japanese Zen garden, cherry blossoms falling slowly, koi pond, stone lantern, soft morning mist, tranquil and meditative vibe." },
+            { id: 15, title: "Mars Colony", prompt: "Wide shot of an astronaut standing on a cliff on Mars, looking at a colony in the distance, red dust storm approaching, sci-fi realism, IMAX quality." },
+            { id: 16, title: "Haunted Mansion", prompt: "Creepy establishing shot of an old victorian mansion on a hill, full moon, fog rolling in, dead trees, gothic horror style, blue moonlight." },
+            { id: 17, title: "Bioluminescence", prompt: "Magical forest at night with glowing bioluminescent plants and mushrooms, purple and blue neon colors, fairy-like atmosphere, dreamlike visual." },
+            { id: 18, title: "Cozy Coffee", prompt: "Cinematic shot through a rainy window looking into a cozy coffee shop, warm yellow light, steam rising from a cup, jazz vibe, bokeh effect." },
+            { id: 19, title: "Dragon Flight", prompt: "Epic fantasy shot of a dragon flying over a medieval castle, breathing fire, wings spread wide, smoke and debris, cinematic action scene." },
+            { id: 20, title: "Urban Time-lapse", prompt: "Hyper-lapse of a busy city intersection at night, car light trails, skyscrapers, bustling crowd, modern urban energy, 4k high bitrate." }
+        ];
+
+        const container = document.getElementById('card-container');
+
+        // কার্ড রেন্ডার ফাংশন
+        function renderCards() {
+            container.innerHTML = cardsData.map((card, index) => `
+                <div class="card">
+                    <div class="card-img-container">
+                        <img src="https://picsum.photos/seed/${index + 55}/500/300" alt="${card.title}" class="card-img">
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${card.title}</div>
+                        <div class="prompt-box" id="prompt-${card.id}">
+                            ${card.prompt}
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn-copy" onclick="copyToClipboard('prompt-${card.id}')">
+                                📋 কপি
+                            </button>
+                            <a href="https://gemini.google.com/" target="_blank" class="btn-create" style="text-decoration: none; display: flex;">
+                                <button style="background:transparent; color:white; border:none; width:100%; padding:0;">
+                                    🎬 ভিডিও তৈরি করুন
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // কপি ফাংশন
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("✅ প্রম্পট কপি হয়েছে!");
+            }).catch(err => {
+                showToast("❌ কপি করতে সমস্যা হয়েছে!");
+            });
+        }
+
+        // টোস্ট মেসেজ
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        // শেয়ার ফাংশন
+        function sharePage() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Veo 3 ভিডিও প্রম্পট',
+                    text: 'সেরা কিছু AI ভিডিও প্রম্পট পেতে এই পেজটি দেখুন!',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                showToast("লিংক কপি হয়েছে!");
+            }
+        }
+
+        // পেজ লোড
+        renderCards();
+    </script>
+</body>
+</html>
